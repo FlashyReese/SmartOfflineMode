@@ -7,7 +7,6 @@ import me.flashyreese.mods.smartofflinemode.server.command.RegisterCommand;
 import me.flashyreese.mods.smartofflinemode.server.event.entity.player.*;
 import me.flashyreese.mods.smartofflinemode.server.event.item.DropItemCallback;
 import me.flashyreese.mods.smartofflinemode.server.event.item.TakeItemCallback;
-import me.flashyreese.smartofflinemode.server.event.entity.player.*;
 import net.fabricmc.fabric.api.event.player.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
