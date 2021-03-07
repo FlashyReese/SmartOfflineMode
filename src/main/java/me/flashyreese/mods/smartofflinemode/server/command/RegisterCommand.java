@@ -37,6 +37,7 @@ public class RegisterCommand {
         } else {
             if (pass1.equals(pass2)) {
                 if (SmartOfflineModeServerMod.getAuthHandler().registerAccount(player.getGameProfile(), pass1, player.getIp())) {
+                    SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().restoreState(player);
                     source.sendFeedback(new LiteralText("Registered and logged in!"), false);
                 } else {
                     source.sendFeedback(new LiteralText("Already registered!"), false);

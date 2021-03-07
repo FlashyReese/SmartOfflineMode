@@ -32,7 +32,7 @@ public class LoginCommand {
         ServerPlayerEntity playerEntity = source.getPlayer();
         if (SmartOfflineModeServerMod.getAuthHandler().isRegistered(playerEntity.getGameProfile())) {
             if (SmartOfflineModeServerMod.getAuthHandler().authenticateAccount(playerEntity.getGameProfile(), pass, playerEntity.getIp())) {
-                playerEntity.setInvulnerable(false);
+                SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().restoreState(playerEntity);
                 source.sendFeedback(new LiteralText("Logged in!"), false);
             } else {
                 source.sendFeedback(new LiteralText("Invalid password!"), false);

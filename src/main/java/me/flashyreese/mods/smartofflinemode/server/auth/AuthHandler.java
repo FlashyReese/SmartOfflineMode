@@ -16,6 +16,7 @@ public class AuthHandler {
 
     private final File file;
     private final EventHandler eventHandler;
+    private final PlayerStateManager playerStateManager;
 
     private final List<Account> accounts = new ArrayList<>();
     private final List<GameProfile> unauthenticated = new ArrayList<>();
@@ -23,6 +24,7 @@ public class AuthHandler {
     public AuthHandler(File file) {
         this.file = file;
         this.eventHandler = new EventHandler(this);
+        this.playerStateManager = new PlayerStateManager();
         this.read();
     }
 
@@ -55,6 +57,7 @@ public class AuthHandler {
         account.setIpAddress(ip);
         this.accounts.add(account);
         this.authenticateAccount(gameProfile, password, ip);
+        //todo: probably not do this here, thread blocking :/ need to use an actual database :>
         this.writeChanges();
         return true;
     }
@@ -111,6 +114,10 @@ public class AuthHandler {
 
     public EventHandler getEventHandler() {
         return eventHandler;
+    }
+
+    public PlayerStateManager getPlayerStateManager() {
+        return playerStateManager;
     }
 
     public void writeChanges() {
