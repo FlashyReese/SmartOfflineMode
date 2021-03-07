@@ -20,6 +20,13 @@ public class PlayerStateManager {
         return true;
     }
 
+    public void isolateState(PlayerEntity entity) {
+        entity.setInvulnerable(true);
+        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, Integer.MAX_VALUE));
+        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.INVISIBILITY, Integer.MAX_VALUE));
+        entity.teleport(0D, 256D, 0D);
+    }
+
     public boolean restoreState(PlayerEntity entity) {
         if (this.playerStateMap.containsKey(entity.getUuid())) {
             State state = this.playerStateMap.get(entity.getUuid());

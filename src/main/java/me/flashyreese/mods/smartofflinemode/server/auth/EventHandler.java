@@ -25,7 +25,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public final class EventHandler implements ChatCallback, PlayerJoinServerCallback, PlayerLeaveServerCallback, PlayerMoveCallback,
@@ -49,17 +48,20 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
 
     @Override
     public void onPlayerJoin(ServerPlayerEntity player) {
-        if (this.authHandler.isLastIP(player.getGameProfile(), player.getIp())) {
-            this.authHandler.authenticateProfile(player.getGameProfile());
-            player.sendMessage(new LiteralText("Logged in with last IP"), false);
-        }else{
-            if (!PlayerResolver.isOnlineAccount(player.getGameProfile())) {
-                if (!this.authHandler.isRegistered(player.getGameProfile())) {
-                    player.sendMessage(new LiteralText("Please register using /register"), false);
-                } else {
-                    if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
-                        player.sendMessage(new LiteralText("Please login using /login"), false);
-                    }
+        if (!PlayerResolver.isOnlineAccount(player.getGameProfile())) {
+
+            this.authHandler.getPlayerStateManager().trackState(player);
+            this.authHandler.getPlayerStateManager().isolateState(player);
+
+            if (this.authHandler.isLastIP(player.getGameProfile(), player.getIp())) {
+                this.authHandler.authenticateProfile(player.getGameProfile());
+                this.authHandler.getPlayerStateManager().restoreState(player);
+                player.sendMessage(new LiteralText("Logged in with last IP"), false);
+            }else if (!this.authHandler.isRegistered(player.getGameProfile())) {
+                player.sendMessage(new LiteralText("Please register using /register"), false);
+            } else {
+                if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
+                    player.sendMessage(new LiteralText("Please login using /login"), false);
                 }
             }
         }
@@ -73,9 +75,6 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
     @Override
     public ActionResult onPlayerMove(PlayerEntity player) {
         if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
-            this.authHandler.getPlayerStateManager().trackState(player);
-            if (!player.isInvulnerable())
-                player.setInvulnerable(true);
             return ActionResult.FAIL;
         }
         return ActionResult.PASS;
@@ -108,10 +107,7 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
 
     @Override
     public boolean beforeBlockBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
-            return false;
-        }
-        return true;
+        return this.authHandler.isLoggedIn(player.getGameProfile());
     }
 
     @Override
