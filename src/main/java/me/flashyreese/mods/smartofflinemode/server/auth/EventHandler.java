@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public final class EventHandler implements ChatCallback, PlayerJoinServerCallback, PlayerLeaveServerCallback, PlayerMoveCallback,
@@ -48,12 +49,17 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
 
     @Override
     public void onPlayerJoin(ServerPlayerEntity player) {
-        if (!PlayerResolver.isOnlineAccount(player.getGameProfile())) {
-            if (!this.authHandler.isRegistered(player.getGameProfile())) {
-                player.sendMessage(new LiteralText("Please register using /register"), false);
-            } else {
-                if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
-                    player.sendMessage(new LiteralText("Please login using /login"), false);
+        if (this.authHandler.isLastIP(player.getGameProfile(), player.getIp())) {
+            this.authHandler.authenticateProfile(player.getGameProfile());
+            player.sendMessage(new LiteralText("Logged in with last IP"), false);
+        }else{
+            if (!PlayerResolver.isOnlineAccount(player.getGameProfile())) {
+                if (!this.authHandler.isRegistered(player.getGameProfile())) {
+                    player.sendMessage(new LiteralText("Please register using /register"), false);
+                } else {
+                    if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
+                        player.sendMessage(new LiteralText("Please login using /login"), false);
+                    }
                 }
             }
         }
@@ -67,6 +73,7 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
     @Override
     public ActionResult onPlayerMove(PlayerEntity player) {
         if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
+            this.authHandler.getPlayerStateManager().trackState(player);
             if (!player.isInvulnerable())
                 player.setInvulnerable(true);
             return ActionResult.FAIL;
@@ -76,10 +83,10 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
 
     @Override
     public LiteralText checkCanPlayerJoinServer(SocketAddress socketAddress, GameProfile profile, PlayerManager manager) {
-        if (this.authHandler.isLastIP(profile, socketAddress.toString())) {
-            this.authHandler.authenticateProfile(profile);
+        /*InetSocketAddress sockaddr = (InetSocketAddress)socketAddress;
+        if (this.authHandler.isLastIP(profile, sockaddr.getAddress().getHostAddress())) {
             return new LiteralText("Logged in with last IP");
-        }
+        }*/
         return null;
     }
 
