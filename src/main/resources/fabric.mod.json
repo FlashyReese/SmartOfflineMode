@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "smartofflinemode",
+  "version": "${version}",
+  "name": "Smart Offline Mode",
+  "description": "",
+  "authors": [
+    "FlashyReese"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "me.flashyreese.smartofflinemode.server.SmartOfflineModeServerMod"
+    ]
+  },
+  "mixins": [
+    "smartofflinemode.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.2",
+    "minecraft": "1.16.5"
+  }
+}
