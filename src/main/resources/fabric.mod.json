@@ -12,7 +12,7 @@
   "environment": "server",
   "entrypoints": {
     "server": [
-      "me.flashyreese.smartofflinemode.server.SmartOfflineModeServerMod"
+      "me.flashyreese.mods.smartofflinemode.server.SmartOfflineModeServerMod"
     ]
   },
   "mixins": [

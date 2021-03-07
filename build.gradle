@@ -16,13 +16,12 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+    //Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // BCrypt
     implementation "at.favre.lib:bcrypt:${project.bcrypt_version}"
     include "at.favre.lib:bcrypt:${project.bcrypt_version}"
-    // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
-    // You may need to force-disable transitiveness on them.
 }
 
 processResources {
@@ -54,7 +53,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 }
 
 jar {
-    from "LICENSE"
+    from "LICENSE.txt"
 }
 
 // configure the maven publication
