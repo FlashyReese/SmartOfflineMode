@@ -22,6 +22,8 @@ dependencies {
     //Database
     implementation "org.lmdbjava:lmdbjava:${project.lmdb_version}"
     include "org.lmdbjava:lmdbjava:${project.lmdb_version}"
+    implementation "com.github.jnr:jnr-ffi:${project.jnr_ffi_version}"
+    include "com.github.jnr:jnr-ffi:${project.jnr_ffi_version}"
 
     // BCrypt
     implementation "at.favre.lib:bcrypt:${project.bcrypt_version}"
