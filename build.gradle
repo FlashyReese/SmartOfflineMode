@@ -1,4 +1,7 @@
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
     id 'fabric-loom' version '0.7-SNAPSHOT'
     id 'maven-publish'
 }
@@ -10,6 +13,11 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
+configurations {
+    shadow
+    api.extendsFrom shadow
+}
+
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -20,14 +28,12 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     //Database
-    implementation "org.lmdbjava:lmdbjava:${project.lmdb_version}"
-    include "org.lmdbjava:lmdbjava:${project.lmdb_version}"
-    implementation "com.github.jnr:jnr-ffi:${project.jnr_ffi_version}"
-    include "com.github.jnr:jnr-ffi:${project.jnr_ffi_version}"
+    shadow("org.lmdbjava:lmdbjava:${project.lmdb_version}") {
+        exclude group: 'org.ow2.asm' //Fabric Loader already includes this
+    }
 
     // BCrypt
-    implementation "at.favre.lib:bcrypt:${project.bcrypt_version}"
-    include "at.favre.lib:bcrypt:${project.bcrypt_version}"
+    shadow("at.favre.lib:bcrypt:${project.bcrypt_version}")
 }
 
 processResources {
@@ -61,6 +67,23 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 jar {
     from "LICENSE.txt"
 }
+
+shadowJar {
+    dependsOn(project(":").jar)
+    configurations = [project.configurations.shadow]
+    archiveClassifier.set('dev')
+
+    relocate 'org.lmdbjava', 'me.flashyreese.mods.smartofflinemode.shadow.lmdbjava'
+}
+
+task shadowRemapJar(type: RemapJarTask) {
+    dependsOn shadowJar
+
+    input.set(file("${project.buildDir}/libs/$archivesBaseName-${project.version}-dev.jar"))
+    archiveFileName = "${archivesBaseName}-${project.version}.jar"
+    addNestedDependencies.set(true)
+}
+build.dependsOn(shadowRemapJar)
 
 // configure the maven publication
 publishing {
