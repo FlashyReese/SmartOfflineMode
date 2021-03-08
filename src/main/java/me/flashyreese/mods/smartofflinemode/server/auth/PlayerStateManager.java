@@ -1,22 +1,19 @@
 package me.flashyreese.mods.smartofflinemode.server.auth;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public class PlayerStateManager {
-    private final Map<UUID, State> playerStateMap = new HashMap<>();
+    private final Long2ObjectOpenHashMap<State> playerStateMap = new Long2ObjectOpenHashMap<>();
 
     public boolean trackState(PlayerEntity entity) {
-        if (this.playerStateMap.containsKey(entity.getUuid()))
+        if (this.playerStateMap.containsKey(entity.getUuid().getMostSignificantBits()))
             return false;
 
-        this.playerStateMap.put(entity.getUuid(), State.of(entity));
+        this.playerStateMap.put(entity.getUuid().getMostSignificantBits(), State.of(entity));
         return true;
     }
 
@@ -28,8 +25,8 @@ public class PlayerStateManager {
     }
 
     public boolean restoreState(PlayerEntity entity) {
-        if (this.playerStateMap.containsKey(entity.getUuid())) {
-            State state = this.playerStateMap.get(entity.getUuid());
+        if (this.playerStateMap.containsKey(entity.getUuid().getMostSignificantBits())) {
+            State state = this.playerStateMap.get(entity.getUuid().getMostSignificantBits());
             entity.removeStatusEffect(StatusEffects.BLINDNESS);
             if (state.blindness != null) {
                 entity.addStatusEffect(state.blindness);
@@ -40,6 +37,7 @@ public class PlayerStateManager {
             }
             entity.teleport(state.position.getX(), state.position.getY(), state.position.getZ());
             entity.setInvulnerable(state.vulnerable);
+            this.playerStateMap.remove(entity.getUuid().getMostSignificantBits());
             return true;
         }
         return false;

@@ -1,20 +1,17 @@
 package me.flashyreese.mods.smartofflinemode.server.auth;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.mojang.authlib.GameProfile;
+import me.flashyreese.mods.smartofflinemode.server.auth.database.LMDB;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class AuthHandler {
-    private final Gson gson = new Gson();
 
-    private final File file;
+    private final LMDB lmdb;
     private final EventHandler eventHandler;
     private final PlayerStateManager playerStateManager;
 
@@ -22,19 +19,13 @@ public class AuthHandler {
     private final List<GameProfile> unauthenticated = new ArrayList<>();
 
     public AuthHandler(File file) {
-        this.file = file;
+        this.lmdb = new LMDB(file);
         this.eventHandler = new EventHandler(this);
         this.playerStateManager = new PlayerStateManager();
-        this.read();
     }
 
     public Account getAccount(GameProfile profile) {
-        for (Account account : this.accounts) {
-            if (account.getUUID().toString().equals(profile.getId().toString())) {
-                return account;
-            }
-        }
-        return null;
+        return this.lmdb.getAccount(profile.getId());
     }
 
     public boolean isLoggedIn(GameProfile gameProfile) {
@@ -55,10 +46,8 @@ public class AuthHandler {
 
         Account account = new Account(gameProfile.getId(), password);
         account.setIpAddress(ip);
-        this.accounts.add(account);
+        this.lmdb.addAccount(account);
         this.authenticateAccount(gameProfile, password, ip);
-        //todo: probably not do this here, thread blocking :/ need to use an actual database :>
-        this.writeChanges();
         return true;
     }
 
@@ -66,8 +55,7 @@ public class AuthHandler {
         if (!this.isRegistered(gameProfile)) return false;
 
         Account account = this.getAccount(gameProfile);
-        this.accounts.remove(account);
-        this.writeChanges();
+        this.lmdb.deleteAccount(account);
         return true;
     }
 
@@ -77,8 +65,8 @@ public class AuthHandler {
         Account account = this.getAccount(gameProfile);
         if (account.isValidPassword(password)) {
             account.setIpAddress(ip);
+            this.lmdb.addAccount(account);
             this.authenticateProfile(gameProfile);
-            this.writeChanges();
             return true;
         }
         return false;
@@ -103,13 +91,16 @@ public class AuthHandler {
         if (logout) {
             account.setIpAddress("");
         }
-        this.unauthenticated.add(gameProfile);
-        this.writeChanges();
+        this.lmdb.addAccount(account);
+        this.addUnauthenticated(gameProfile);
         return true;
     }
 
-    public List<GameProfile> getUnauthenticated() {
-        return unauthenticated;
+    public void addUnauthenticated(GameProfile profile) {
+        Optional<GameProfile> optionalGameProfile = this.unauthenticated.stream().filter(gameProfile -> gameProfile.getId().toString().equals(profile.getId().toString()) && gameProfile.getName().equals(profile.getName())).findFirst();
+        if (!optionalGameProfile.isPresent()) {
+            this.unauthenticated.add(profile);
+        }
     }
 
     public EventHandler getEventHandler() {
@@ -120,26 +111,11 @@ public class AuthHandler {
         return playerStateManager;
     }
 
-    public void writeChanges() {
-        try (FileWriter fw = new FileWriter(this.file)) {
-            String json = this.gson.toJson(this.accounts);
-            fw.write(json);
-            fw.flush();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public List<Account> getAccounts() {
+        return accounts;
     }
 
-    public void read() {
-        if (!this.file.exists())
-            this.writeChanges();
-
-        try (FileReader reader = new FileReader(this.file)) {
-            this.accounts.clear();
-            this.accounts.addAll(this.gson.fromJson(reader, new TypeToken<List<Account>>() {
-            }.getType()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public List<GameProfile> getUnauthenticated() {
+        return unauthenticated;
     }
 }

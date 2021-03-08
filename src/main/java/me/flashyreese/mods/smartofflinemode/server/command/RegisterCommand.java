@@ -4,7 +4,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import me.flashyreese.mods.smartofflinemode.api.PlayerResolver;
 import me.flashyreese.mods.smartofflinemode.server.SmartOfflineModeServerMod;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -15,7 +14,7 @@ public class RegisterCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> getCommand() {
         return CommandManager.literal("register").requires(serverCommandSource -> {
             try {
-                return !PlayerResolver.isOnlineAccount(serverCommandSource.getPlayer().getGameProfile());
+                return SmartOfflineModeServerMod.getAuthHandler().getAccount(serverCommandSource.getPlayer().getGameProfile()) == null && SmartOfflineModeServerMod.getAuthHandler().getUnauthenticated().contains(serverCommandSource.getPlayer().getGameProfile());
             } catch (CommandSyntaxException exception) {
                 exception.printStackTrace();
             }

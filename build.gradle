@@ -19,6 +19,10 @@ dependencies {
     //Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+    //Database
+    implementation "org.lmdbjava:lmdbjava:${project.lmdb_version}"
+    include "org.lmdbjava:lmdbjava:${project.lmdb_version}"
+
     // BCrypt
     implementation "at.favre.lib:bcrypt:${project.bcrypt_version}"
     include "at.favre.lib:bcrypt:${project.bcrypt_version}"

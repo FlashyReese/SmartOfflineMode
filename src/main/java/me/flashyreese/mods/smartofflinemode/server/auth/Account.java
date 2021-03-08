@@ -11,7 +11,7 @@ public class Account {
 
     public Account(UUID uuid, String password){
         this.uuid = uuid.toString();
-        this.password = String.valueOf(BCrypt.withDefaults().hashToChar(12, password.toCharArray()));
+        this.password = password;
         this.ipAddress = "";
     }
 
@@ -28,7 +28,7 @@ public class Account {
     }
 
     public boolean isValidPassword(String password){
-        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), this.password.toCharArray());
+        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), BCrypt.withDefaults().hashToChar(12, this.password.toCharArray()));//fixme
         return result.verified;
     }
 

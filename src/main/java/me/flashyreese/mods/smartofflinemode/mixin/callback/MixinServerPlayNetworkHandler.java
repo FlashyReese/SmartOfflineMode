@@ -1,7 +1,6 @@
 package me.flashyreese.mods.smartofflinemode.mixin.callback;
 
-import me.flashyreese.mods.smartofflinemode.server.event.entity.player.ChatCallback;
-import me.flashyreese.mods.smartofflinemode.server.event.entity.player.PlayerMoveCallback;
+import me.flashyreese.mods.smartofflinemode.server.event.PlayerEvents;
 import me.flashyreese.mods.smartofflinemode.server.event.item.TakeItemCallback;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
@@ -32,7 +31,7 @@ public abstract class MixinServerPlayNetworkHandler {
             cancellable = true
     )
     private void onPlayerChat(String message, CallbackInfo ci) {
-        ActionResult result = ChatCallback.EVENT.invoker().onPlayerChat(this.player, message);
+        ActionResult result = PlayerEvents.CHAT.invoker().onPlayerChat(this.player, message);
         if (result == ActionResult.FAIL) {
             ci.cancel();
         }
@@ -66,7 +65,7 @@ public abstract class MixinServerPlayNetworkHandler {
             cancellable = true
     )
     private void onPlayerMove(PlayerMoveC2SPacket playerMoveC2SPacket, CallbackInfo ci) {
-        ActionResult result = PlayerMoveCallback.EVENT.invoker().onPlayerMove(player);
+        ActionResult result = PlayerEvents.MOVE.invoker().onPlayerMove(player);
         if (result == ActionResult.FAIL) {
             // A bit ugly, I know. (we need to update player position)
             player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.yaw, player.pitch);

@@ -4,7 +4,8 @@ import com.mojang.authlib.GameProfile;
 import me.flashyreese.mods.smartofflinemode.api.PlayerResolver;
 import me.flashyreese.mods.smartofflinemode.server.command.LoginCommand;
 import me.flashyreese.mods.smartofflinemode.server.command.RegisterCommand;
-import me.flashyreese.mods.smartofflinemode.server.event.entity.player.*;
+import me.flashyreese.mods.smartofflinemode.server.event.PlayerEvents;
+import me.flashyreese.mods.smartofflinemode.server.event.PlayerServerEvents;
 import me.flashyreese.mods.smartofflinemode.server.event.item.DropItemCallback;
 import me.flashyreese.mods.smartofflinemode.server.event.item.TakeItemCallback;
 import net.fabricmc.fabric.api.event.player.*;
@@ -27,8 +28,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.SocketAddress;
 
-public final class EventHandler implements ChatCallback, PlayerJoinServerCallback, PlayerLeaveServerCallback, PlayerMoveCallback,
-        PrePlayerJoinCallback, DropItemCallback, TakeItemCallback, UseEntityCallback, AttackEntityCallback, UseItemCallback,
+public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerServerEvents.Join, PlayerServerEvents.Leave,
+        PlayerEvents.Chat, PlayerEvents.Move, DropItemCallback, TakeItemCallback, UseEntityCallback, AttackEntityCallback, UseItemCallback,
         UseBlockCallback, PlayerBlockBreakEvents.Before {
 
     private final AuthHandler authHandler;
@@ -57,7 +58,7 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
                 this.authHandler.authenticateProfile(player.getGameProfile());
                 this.authHandler.getPlayerStateManager().restoreState(player);
                 player.sendMessage(new LiteralText("Logged in with last IP"), false);
-            }else if (!this.authHandler.isRegistered(player.getGameProfile())) {
+            } else if (!this.authHandler.isRegistered(player.getGameProfile())) {
                 player.sendMessage(new LiteralText("Please register using /register"), false);
             } else {
                 if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
@@ -69,7 +70,9 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
 
     @Override
     public void onPlayerLeave(ServerPlayerEntity player) {
-
+        if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
+            this.authHandler.getPlayerStateManager().restoreState(player);
+        }
     }
 
     @Override
@@ -81,7 +84,7 @@ public final class EventHandler implements ChatCallback, PlayerJoinServerCallbac
     }
 
     @Override
-    public LiteralText checkCanPlayerJoinServer(SocketAddress socketAddress, GameProfile profile, PlayerManager manager) {
+    public LiteralText checkCanJoin(SocketAddress socketAddress, GameProfile profile, PlayerManager manager) {
         /*InetSocketAddress sockaddr = (InetSocketAddress)socketAddress;
         if (this.authHandler.isLastIP(profile, sockaddr.getAddress().getHostAddress())) {
             return new LiteralText("Logged in with last IP");

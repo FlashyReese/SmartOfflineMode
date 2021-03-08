@@ -173,15 +173,13 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
                         SOMServerLoginNetworkHandler.this.profile = SOMServerLoginNetworkHandler.this.toOfflineProfile(gameProfile);
                         SOMServerLoginNetworkHandler.this.state = SOMServerLoginNetworkHandler.State.READY_TO_ACCEPT;
                     } else {
-                        // Todo: allow entry verify if offline fake user or offline real user, if offline fake user let them in but lock them in login/register state else if offline real user kick with reason to relog properly with online token
-                        // Additionally: We could create a dedicated login/register screen and send packets to open and log into that screen like `this#disconnect`, this unnecessary since we can login/register with chat while in the on the server but might be fun.
                         if (PlayerResolver.isOnlineAccount(gameProfile)) {
                             SOMServerLoginNetworkHandler.this.disconnect(new LiteralText("This server is using Smart Offline Mode, please log into the account you are using or please choice an account name not used by Mojang"));
                             SOMServerLoginNetworkHandler.LOGGER.error("Username '{}' tried to join with an invalid session", gameProfile.getName());
                         } else {
                             SOMServerLoginNetworkHandler.this.profile = SOMServerLoginNetworkHandler.this.toOfflineProfile(gameProfile);
                             SOMServerLoginNetworkHandler.this.state = SOMServerLoginNetworkHandler.State.READY_TO_ACCEPT;
-                            SmartOfflineModeServerMod.getAuthHandler().getUnauthenticated().add(SOMServerLoginNetworkHandler.this.toOfflineProfile(gameProfile));
+                            SmartOfflineModeServerMod.getAuthHandler().addUnauthenticated(SOMServerLoginNetworkHandler.this.toOfflineProfile(gameProfile));
                         }
                     }
                 } catch (AuthenticationUnavailableException var3) {
