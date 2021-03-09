@@ -58,6 +58,8 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
                 this.authHandler.authenticateProfile(player.getGameProfile());
                 this.authHandler.getPlayerStateManager().restoreState(player);
                 player.sendMessage(new LiteralText("Logged in with last IP"), false);
+
+                player.getServer().getPlayerManager().sendCommandTree(player);
             } else if (!this.authHandler.isRegistered(player.getGameProfile())) {
                 player.sendMessage(new LiteralText("Please register using /register"), false);
             } else {

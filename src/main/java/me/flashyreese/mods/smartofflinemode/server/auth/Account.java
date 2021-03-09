@@ -9,10 +9,18 @@ public class Account {
     private String password;
     private String ipAddress;
 
-    public Account(UUID uuid, String password){
+    private Account(UUID uuid, String password){
         this.uuid = uuid.toString();
         this.password = password;
         this.ipAddress = "";
+    }
+
+    public static Account of(UUID uuid, String password) {
+        return new Account(uuid, password);
+    }
+
+    public static Account create(UUID uuid, String password) {
+        return new Account(uuid, BCrypt.withDefaults().hashToString(12, password.toCharArray()));
     }
 
     public UUID getUUID() {
@@ -23,21 +31,8 @@ public class Account {
         return password;
     }
 
-    private void setPassword(String password) {
+    void setPassword(String password) {
         this.password = password;
-    }
-
-    public boolean isValidPassword(String password){
-        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), BCrypt.withDefaults().hashToChar(12, this.password.toCharArray()));//fixme
-        return result.verified;
-    }
-
-    public boolean updatePassword(String oldPassword, String newPassword){
-        if (this.isValidPassword(oldPassword)){
-            this.setPassword(String.valueOf(BCrypt.withDefaults().hashToChar(12, newPassword.toCharArray())));
-            return true;
-        }
-        return false;
     }
 
     public String getIpAddress() {

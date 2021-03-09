@@ -1,7 +1,10 @@
 package me.flashyreese.mods.smartofflinemode.server.auth.database;
 
 import me.flashyreese.mods.smartofflinemode.server.auth.Account;
-import org.lmdbjava.*;
+import org.lmdbjava.Dbi;
+import org.lmdbjava.DbiFlags;
+import org.lmdbjava.Env;
+import org.lmdbjava.Txn;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -38,7 +41,7 @@ public class LMDB {
             return null;
         }
         String ip = this.getIP(uuid);
-        Account account = new Account(uuid, password);
+        Account account = Account.of(uuid, password);
         account.setIpAddress(ip == null ? "" : ip);
         return account;
     }
@@ -50,11 +53,11 @@ public class LMDB {
         return password;
     }
 
-    private void putPassword(UUID uuid, String ip) {
+    private void putPassword(UUID uuid, String password) {
         final ByteBuffer key = ByteBuffer.allocateDirect(this.environment.getMaxKeySize());
-        final ByteBuffer val = ByteBuffer.allocateDirect(256);
+        final ByteBuffer val = ByteBuffer.allocateDirect(511);
         key.put(uuid.toString().getBytes(StandardCharsets.UTF_8)).flip();
-        val.put(ip.getBytes(StandardCharsets.UTF_8)).flip();
+        val.put(password.getBytes(StandardCharsets.UTF_8)).flip();
         this.passwordDB.put(key, val);
     }
 

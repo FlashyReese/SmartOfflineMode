@@ -33,6 +33,9 @@ public class LoginCommand {
             if (SmartOfflineModeServerMod.getAuthHandler().authenticateAccount(playerEntity.getGameProfile(), pass, playerEntity.getIp())) {
                 SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().restoreState(playerEntity);
                 source.sendFeedback(new LiteralText("Logged in!"), false);
+
+                // Update command tree
+                source.getMinecraftServer().getPlayerManager().sendCommandTree(playerEntity);
             } else {
                 source.sendFeedback(new LiteralText("Invalid password!"), false);
             }

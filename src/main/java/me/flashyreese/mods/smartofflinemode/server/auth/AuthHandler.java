@@ -1,6 +1,6 @@
 package me.flashyreese.mods.smartofflinemode.server.auth;
 
-import com.google.gson.Gson;
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.mojang.authlib.GameProfile;
 import me.flashyreese.mods.smartofflinemode.server.auth.database.LMDB;
 
@@ -15,7 +15,6 @@ public class AuthHandler {
     private final EventHandler eventHandler;
     private final PlayerStateManager playerStateManager;
 
-    private final List<Account> accounts = new ArrayList<>();
     private final List<GameProfile> unauthenticated = new ArrayList<>();
 
     public AuthHandler(File file) {
@@ -44,7 +43,7 @@ public class AuthHandler {
     public boolean registerAccount(GameProfile gameProfile, String password, String ip) {
         if (this.isRegistered(gameProfile)) return false;
 
-        Account account = new Account(gameProfile.getId(), password);
+        Account account = Account.create(gameProfile.getId(), password);
         account.setIpAddress(ip);
         this.lmdb.addAccount(account);
         this.authenticateAccount(gameProfile, password, ip);
@@ -63,7 +62,8 @@ public class AuthHandler {
         if (!this.isRegistered(gameProfile)) return false;
 
         Account account = this.getAccount(gameProfile);
-        if (account.isValidPassword(password)) {
+        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), account.getPassword());
+        if (result.verified) {
             account.setIpAddress(ip);
             this.lmdb.addAccount(account);
             this.authenticateProfile(gameProfile);
@@ -103,16 +103,24 @@ public class AuthHandler {
         }
     }
 
+    public void changeAccountPassword(GameProfile gameProfile, String newPass) {
+        Account updatedAccount = this.lmdb.getAccount(gameProfile.getId());
+        updatedAccount.setPassword(BCrypt.withDefaults().hashToString(12, newPass.toCharArray()));
+        this.lmdb.addAccount(updatedAccount);
+    }
+
+    public boolean isValidPassword(GameProfile gameProfile, String password) {
+        Account account = this.lmdb.getAccount(gameProfile.getId());
+        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), account.getPassword());
+        return result.verified;
+    }
+
     public EventHandler getEventHandler() {
         return eventHandler;
     }
 
     public PlayerStateManager getPlayerStateManager() {
         return playerStateManager;
-    }
-
-    public List<Account> getAccounts() {
-        return accounts;
     }
 
     public List<GameProfile> getUnauthenticated() {

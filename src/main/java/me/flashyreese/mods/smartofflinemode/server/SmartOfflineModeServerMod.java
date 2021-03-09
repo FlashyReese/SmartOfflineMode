@@ -1,6 +1,8 @@
 package me.flashyreese.mods.smartofflinemode.server;
 
+import me.flashyreese.mods.smartofflinemode.server.auth.Account;
 import me.flashyreese.mods.smartofflinemode.server.auth.AuthHandler;
+import me.flashyreese.mods.smartofflinemode.server.command.AccountCommand;
 import me.flashyreese.mods.smartofflinemode.server.command.LoginCommand;
 import me.flashyreese.mods.smartofflinemode.server.command.LogoutCommand;
 import me.flashyreese.mods.smartofflinemode.server.command.RegisterCommand;
@@ -23,6 +25,7 @@ public class SmartOfflineModeServerMod implements DedicatedServerModInitializer 
         // Registering the commands
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             if (dedicated) {
+                dispatcher.register(AccountCommand.getCommand());
                 dispatcher.register(RegisterCommand.getCommand());
                 dispatcher.register(LoginCommand.getCommand());
                 dispatcher.register(LogoutCommand.getCommand());

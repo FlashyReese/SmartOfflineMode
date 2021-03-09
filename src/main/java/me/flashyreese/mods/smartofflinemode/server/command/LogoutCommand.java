@@ -29,6 +29,9 @@ public class LogoutCommand {
                 SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().trackState(player);
                 SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().isolateState(player);
                 serverCommandSource.sendFeedback(new LiteralText("Logged out!"), false);
+
+                // Update command tree
+                serverCommandSource.getMinecraftServer().getPlayerManager().sendCommandTree(player);
             } else {
                 serverCommandSource.sendFeedback(new LiteralText("Something went wrong! :(s"), false);
             }
