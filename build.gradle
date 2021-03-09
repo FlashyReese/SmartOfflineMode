@@ -28,12 +28,12 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     //Database
-    shadow("org.lmdbjava:lmdbjava:${project.lmdb_version}") {
+    shadow(implementation("org.lmdbjava:lmdbjava:${project.lmdb_version}")) {
         exclude group: 'org.ow2.asm' //Fabric Loader already includes this
     }
 
     // BCrypt
-    shadow("at.favre.lib:bcrypt:${project.bcrypt_version}")
+    shadow(implementation("at.favre.lib:bcrypt:${project.bcrypt_version}"))
 }
 
 processResources {
