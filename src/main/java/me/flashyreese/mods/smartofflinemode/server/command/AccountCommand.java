@@ -14,7 +14,7 @@ public class AccountCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> getCommand() {
         return CommandManager.literal("account").requires(serverCommandSource -> {
             try {
-                return SmartOfflineModeServerMod.getAuthHandler().getAccount(serverCommandSource.getPlayer().getGameProfile()) != null;
+                return SmartOfflineModeServerMod.getAuthHandler().getAccount(serverCommandSource.getPlayer().getGameProfile()) != null && SmartOfflineModeServerMod.getAuthHandler().isLoggedIn(serverCommandSource.getPlayer().getGameProfile());
             } catch (CommandSyntaxException exception) {
                 exception.printStackTrace();
             }
@@ -25,6 +25,12 @@ public class AccountCommand {
                                 .then(CommandManager.argument("confirmNewPassword", StringArgumentType.word())
                                         .executes(context -> changePassword(context.getSource(), StringArgumentType.getString(context, "oldPassword"), StringArgumentType.getString(context, "newPassword"), StringArgumentType.getString(context, "confirmNewPassword")))
                                 )
+                        )
+                )
+        ).then(CommandManager.literal("deleteAccount")
+                .then(CommandManager.argument("player", StringArgumentType.word())
+                        .then(CommandManager.argument("password", StringArgumentType.word())
+                                .executes(context -> deleteAccount(context.getSource(), StringArgumentType.getString(context, "player"), StringArgumentType.getString(context, "password")))
                         )
                 )
         );
@@ -42,6 +48,34 @@ public class AccountCommand {
                 }
             } else {
                 source.sendFeedback(new LiteralText("The old password does not match!"), false);
+            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int deleteAccount(ServerCommandSource source, String player, String newPass) throws CommandSyntaxException {
+        ServerPlayerEntity playerEntity = source.getPlayer();
+        if (SmartOfflineModeServerMod.getAuthHandler().isRegistered(playerEntity.getGameProfile())) {
+            if (playerEntity.getGameProfile().getName().equals(player)) {
+                if (SmartOfflineModeServerMod.getAuthHandler().isValidPassword(playerEntity.getGameProfile(), newPass)) {
+                    if (SmartOfflineModeServerMod.getAuthHandler().unregisterAccount(playerEntity.getGameProfile())) {
+                        //Todo: Backup Offline Player Data, Delete Player Data Live
+                        //Fixme: trackState is a boolean put if statement on all it's location
+                        SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().trackState(playerEntity);
+                        SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().isolateState(playerEntity);
+                        SmartOfflineModeServerMod.getAuthHandler().addUnauthenticated(playerEntity.getGameProfile());
+
+                        source.sendFeedback(new LiteralText("Account has been deleted!"), false);
+                        // Update command tree
+                        source.getMinecraftServer().getPlayerManager().sendCommandTree(playerEntity);
+                    } else {
+                        source.sendFeedback(new LiteralText("Something went wrong!"), false);
+                    }
+                } else {
+                    source.sendFeedback(new LiteralText("The password does not match!"), false);
+                }
+            } else {
+                source.sendFeedback(new LiteralText("The player name does not match!"), false);
             }
         }
         return Command.SINGLE_SUCCESS;

@@ -72,6 +72,7 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
 
     @Override
     public void onPlayerLeave(ServerPlayerEntity player) {
+        //Todo: If the server is forced close this never occurs, we could track this via the database.
         if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
             this.authHandler.getPlayerStateManager().restoreState(player);
         }

@@ -33,7 +33,7 @@ dependencies {
     }
 
     // BCrypt
-    shadow(implementation("at.favre.lib:bcrypt:${project.bcrypt_version}"))
+    include(implementation("at.favre.lib:bcrypt:${project.bcrypt_version}"))
 }
 
 processResources {
