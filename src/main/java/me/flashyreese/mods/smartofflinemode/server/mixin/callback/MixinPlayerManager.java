@@ -1,4 +1,4 @@
-package me.flashyreese.mods.smartofflinemode.mixin.callback;
+package me.flashyreese.mods.smartofflinemode.server.mixin.callback;
 
 import com.mojang.authlib.GameProfile;
 import me.flashyreese.mods.smartofflinemode.server.event.PlayerServerEvents;

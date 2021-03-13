@@ -1,4 +1,4 @@
-package me.flashyreese.mods.smartofflinemode.mixin.handshake;
+package me.flashyreese.mods.smartofflinemode.server.mixin.handshake;
 
 import me.flashyreese.mods.smartofflinemode.server.SOMServerLoginNetworkHandler;
 import net.minecraft.SharedConstants;

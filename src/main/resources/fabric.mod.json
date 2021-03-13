@@ -9,7 +9,7 @@
   ],
   "contact": {},
   "license": "MIT",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "server": [
       "me.flashyreese.mods.smartofflinemode.server.SmartOfflineModeServerMod"

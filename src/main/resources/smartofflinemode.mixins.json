@@ -1,16 +1,19 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "me.flashyreese.mods.smartofflinemode.mixin",
+  "package": "me.flashyreese.mods.smartofflinemode",
   "compatibilityLevel": "JAVA_8",
   "server": [
-    "callback.MixinPlayerEntity",
-    "callback.MixinPlayerManager",
-    "callback.MixinServerPlayNetworkHandler",
-    "callback.MixinSlot",
-    "handshake.MixinClientConnection",
-    "handshake.MixinIntegratedServerHandshakeNetworkHandler",
-    "handshake.MixinServerHandshakeNetworkHandler"
+    "server.mixin.callback.MixinPlayerEntity",
+    "server.mixin.callback.MixinPlayerManager",
+    "server.mixin.callback.MixinServerPlayNetworkHandler",
+    "server.mixin.callback.MixinSlot",
+    "server.mixin.handshake.MixinClientConnection",
+    "server.mixin.handshake.MixinIntegratedServerHandshakeNetworkHandler",
+    "server.mixin.handshake.MixinServerHandshakeNetworkHandler"
+  ],
+  "client": [
+    "client.mixin.MixinClientLoginNetworkHandler"
   ],
   "injectors": {
     "defaultRequire": 1
