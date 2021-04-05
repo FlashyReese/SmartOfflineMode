@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.flashyreese.mods.smartofflinemode.client.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "MixinClientLoginNetworkHandler"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

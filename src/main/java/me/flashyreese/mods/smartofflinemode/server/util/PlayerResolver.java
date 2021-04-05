@@ -1,4 +1,4 @@
-package me.flashyreese.mods.smartofflinemode.api;
+package me.flashyreese.mods.smartofflinemode.server.util;
 
 import com.google.gson.Gson;
 import com.mojang.authlib.GameProfile;

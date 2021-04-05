@@ -1,7 +1,7 @@
 package me.flashyreese.mods.smartofflinemode.server.auth;
 
 import com.mojang.authlib.GameProfile;
-import me.flashyreese.mods.smartofflinemode.api.PlayerResolver;
+import me.flashyreese.mods.smartofflinemode.server.util.PlayerResolver;
 import me.flashyreese.mods.smartofflinemode.server.command.LoginCommand;
 import me.flashyreese.mods.smartofflinemode.server.command.RegisterCommand;
 import me.flashyreese.mods.smartofflinemode.server.event.PlayerEvents;

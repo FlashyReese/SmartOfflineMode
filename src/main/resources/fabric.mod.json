@@ -16,7 +16,8 @@
     ]
   },
   "mixins": [
-    "smartofflinemode.mixins.json"
+    "smartofflinemode-server.mixins.json",
+    "smartofflinemode-client.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.11.2",

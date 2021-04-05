@@ -2,7 +2,7 @@ package me.flashyreese.mods.smartofflinemode.server;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
-import me.flashyreese.mods.smartofflinemode.api.PlayerResolver;
+import me.flashyreese.mods.smartofflinemode.server.util.PlayerResolver;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkEncryptionUtils;
