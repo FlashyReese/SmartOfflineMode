@@ -31,7 +31,7 @@ public class LogoutCommand {
                 serverCommandSource.sendFeedback(new LiteralText("Logged out!"), false);
 
                 // Update command tree
-                serverCommandSource.getMinecraftServer().getPlayerManager().sendCommandTree(player);
+                serverCommandSource.getServer().getPlayerManager().sendCommandTree(player);
             } else {
                 serverCommandSource.sendFeedback(new LiteralText("Something went wrong! :(s"), false);
             }

@@ -21,7 +21,8 @@ public abstract class MixinServerPlayNetworkHandler {
     @Shadow
     public ServerPlayerEntity player;
 
-    @Inject(
+    // Fixme:
+    /*@Inject(
             method = "method_31286(Ljava/lang/String;)V",
             at = @At(
                     value = "INVOKE",
@@ -35,7 +36,7 @@ public abstract class MixinServerPlayNetworkHandler {
         if (result == ActionResult.FAIL) {
             ci.cancel();
         }
-    }
+    }*/
 
     @Inject(
             method = "onPlayerAction(Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket;)V",
@@ -68,7 +69,7 @@ public abstract class MixinServerPlayNetworkHandler {
         ActionResult result = PlayerEvents.MOVE.invoker().onPlayerMove(player);
         if (result == ActionResult.FAIL) {
             // A bit ugly, I know. (we need to update player position)
-            player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.yaw, player.pitch);
+            player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
             ci.cancel();
         }
     }

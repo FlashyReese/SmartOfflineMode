@@ -40,7 +40,7 @@ public class RegisterCommand {
                     source.sendFeedback(new LiteralText("Registered and logged in!"), false);
 
                     // Update command tree
-                    source.getMinecraftServer().getPlayerManager().sendCommandTree(player);
+                    source.getServer().getPlayerManager().sendCommandTree(player);
                     return 0;
                 } else {
                     source.sendFeedback(new LiteralText("Already registered!"), false);

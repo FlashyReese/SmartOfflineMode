@@ -14,7 +14,8 @@ public class MixinPlayerEntity {
 
 
     // Player item dropping
-    @Inject(method = "dropSelectedItem(Z)Z", at = @At("HEAD"), cancellable = true)
+    // Fixme:
+    /*@Inject(method = "dropSelectedItem(Z)Z", at = @At("HEAD"), cancellable = true)
     private void dropSelectedItem(boolean dropEntireStack, CallbackInfoReturnable<Boolean> cir) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         ActionResult result = DropItemCallback.EVENT.invoker().onDropItem(player);
@@ -22,5 +23,5 @@ public class MixinPlayerEntity {
         if (result == ActionResult.FAIL) {
             cir.setReturnValue(false);
         }
-    }
+    }*/
 }

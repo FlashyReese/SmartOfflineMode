@@ -20,7 +20,7 @@
     "smartofflinemode-client.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.11.2",
-    "minecraft": "1.16.5"
+    "fabricloader": ">=0.11.6",
+    "minecraft": "1.17.x"
   }
 }

@@ -5,8 +5,8 @@ import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
 import me.flashyreese.mods.smartofflinemode.server.util.PlayerResolver;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkEncryptionUtils;
 import net.minecraft.network.encryption.NetworkEncryptionException;
+import net.minecraft.network.encryption.NetworkEncryptionUtils;
 import net.minecraft.network.listener.ServerLoginPacketListener;
 import net.minecraft.network.packet.c2s.login.LoginHelloC2SPacket;
 import net.minecraft.network.packet.c2s.login.LoginKeyC2SPacket;
@@ -15,6 +15,7 @@ import net.minecraft.network.packet.s2c.login.LoginCompressionS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginDisconnectS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginHelloS2CPacket;
 import net.minecraft.network.packet.s2c.login.LoginSuccessS2CPacket;
+import net.minecraft.network.packet.s2c.play.DisconnectS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -38,11 +39,8 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Vanilla Copy with some modified changes.
- */
 public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
-    private static final AtomicInteger authenticatorThreadId = new AtomicInteger(0);
+    private static final AtomicInteger NEXT_AUTHENTICATOR_THREAD_ID = new AtomicInteger(0);
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Random RANDOM = new Random();
     private final byte[] nonce = new byte[4];
@@ -51,7 +49,7 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
     private SOMServerLoginNetworkHandler.State state;
     private int loginTicks;
     private GameProfile profile;
-    private ServerPlayerEntity player;
+    private ServerPlayerEntity delayedPlayer;
 
     public SOMServerLoginNetworkHandler(MinecraftServer server, ClientConnection connection) {
         this.state = SOMServerLoginNetworkHandler.State.HELLO;
@@ -67,8 +65,8 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
             ServerPlayerEntity serverPlayerEntity = this.server.getPlayerManager().getPlayer(this.profile.getId());
             if (serverPlayerEntity == null) {
                 this.state = SOMServerLoginNetworkHandler.State.READY_TO_ACCEPT;
-                this.server.getPlayerManager().onPlayerConnect(this.connection, this.player);
-                this.player = null;
+                this.addToServer(this.delayedPlayer);
+                this.delayedPlayer = null;
             }
         }
 
@@ -95,6 +93,7 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
 
     public void acceptPlayer() {
         if (!this.profile.isComplete()) {
+            //this.profile = this.toOfflineProfile(this.profile);
             this.profile = PlayerResolver.getGameProfile(this.profile.getName());
         }
 
@@ -104,19 +103,31 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
         } else {
             this.state = SOMServerLoginNetworkHandler.State.ACCEPTED;
             if (this.server.getNetworkCompressionThreshold() >= 0 && !this.connection.isLocal()) {
-                this.connection.send(new LoginCompressionS2CPacket(this.server.getNetworkCompressionThreshold()), (channelFuture) -> this.connection.setCompressionThreshold(this.server.getNetworkCompressionThreshold()));
+                this.connection.send(new LoginCompressionS2CPacket(this.server.getNetworkCompressionThreshold()), (channelFuture) -> this.connection.setCompressionThreshold(this.server.getNetworkCompressionThreshold(), true));
             }
 
             this.connection.send(new LoginSuccessS2CPacket(this.profile));
             ServerPlayerEntity serverPlayerEntity = this.server.getPlayerManager().getPlayer(this.profile.getId());
-            if (serverPlayerEntity != null) {
-                this.state = SOMServerLoginNetworkHandler.State.DELAY_ACCEPT;
-                this.player = this.server.getPlayerManager().createPlayer(this.profile);
-            } else {
-                this.server.getPlayerManager().onPlayerConnect(this.connection, this.server.getPlayerManager().createPlayer(this.profile));
+
+            try {
+                ServerPlayerEntity serverPlayerEntity2 = this.server.getPlayerManager().createPlayer(this.profile);
+                if (serverPlayerEntity != null) {
+                    this.state = SOMServerLoginNetworkHandler.State.DELAY_ACCEPT;
+                    this.delayedPlayer = serverPlayerEntity2;
+                } else {
+                    this.addToServer(serverPlayerEntity2);
+                }
+            } catch (Exception var5) {
+                Text text2 = new TranslatableText("multiplayer.disconnect.invalid_player_data");
+                this.connection.send(new DisconnectS2CPacket(text2));
+                this.connection.disconnect(text2);
             }
         }
 
+    }
+
+    private void addToServer(ServerPlayerEntity player) {
+        this.server.getPlayerManager().onPlayerConnect(this.connection, player);
     }
 
     public void onDisconnected(Text reason) {
@@ -124,7 +135,12 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
     }
 
     public String getConnectionInfo() {
-        return this.profile != null ? this.profile + " (" + this.connection.getAddress() + ")" : String.valueOf(this.connection.getAddress());
+        if (this.profile != null) {
+            GameProfile var10000 = this.profile;
+            return var10000 + " (" + this.connection.getAddress() + ")";
+        } else {
+            return String.valueOf(this.connection.getAddress());
+        }
     }
 
     public void onHello(LoginHelloC2SPacket packet) {
@@ -155,11 +171,11 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
             string2 = (new BigInteger(NetworkEncryptionUtils.generateServerId("", this.server.getKeyPair().getPublic(), secretKey))).toString(16);
             this.state = SOMServerLoginNetworkHandler.State.AUTHENTICATING;
             this.connection.setupEncryption(cipher, cipher2);
-        } catch (NetworkEncryptionException var6) {
-            throw new IllegalStateException("Protocol error", var6);
+        } catch (NetworkEncryptionException var7) {
+            throw new IllegalStateException("Protocol error", var7);
         }
 
-        Thread thread = new Thread("User Authenticator #" + authenticatorThreadId.incrementAndGet()) {
+        Thread thread = new Thread("User Authenticator #" + NEXT_AUTHENTICATOR_THREAD_ID.incrementAndGet()) {
             public void run() {
                 GameProfile gameProfile = SOMServerLoginNetworkHandler.this.profile;
 
@@ -168,7 +184,7 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
                     if (SOMServerLoginNetworkHandler.this.profile != null) {
                         SOMServerLoginNetworkHandler.LOGGER.info("UUID of player {} is {}", SOMServerLoginNetworkHandler.this.profile.getName(), SOMServerLoginNetworkHandler.this.profile.getId());
                         SOMServerLoginNetworkHandler.this.state = SOMServerLoginNetworkHandler.State.READY_TO_ACCEPT;
-                    } else if (SOMServerLoginNetworkHandler.this.server.isSinglePlayer()) {
+                    } else if (SOMServerLoginNetworkHandler.this.server.isSingleplayer()) {
                         SOMServerLoginNetworkHandler.LOGGER.warn("Failed to verify username but will let them in anyway!");
                         SOMServerLoginNetworkHandler.this.profile = SOMServerLoginNetworkHandler.this.toOfflineProfile(gameProfile);
                         SOMServerLoginNetworkHandler.this.state = SOMServerLoginNetworkHandler.State.READY_TO_ACCEPT;
@@ -183,7 +199,7 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
                         }
                     }
                 } catch (AuthenticationUnavailableException var3) {
-                    if (SOMServerLoginNetworkHandler.this.server.isSinglePlayer()) {
+                    if (SOMServerLoginNetworkHandler.this.server.isSingleplayer()) {
                         SOMServerLoginNetworkHandler.LOGGER.warn("Authentication servers are down but will let them in anyway!");
                         SOMServerLoginNetworkHandler.this.profile = SOMServerLoginNetworkHandler.this.toOfflineProfile(gameProfile);
                         SOMServerLoginNetworkHandler.this.state = SOMServerLoginNetworkHandler.State.READY_TO_ACCEPT;
@@ -223,4 +239,3 @@ public class SOMServerLoginNetworkHandler implements ServerLoginPacketListener {
         ACCEPTED
     }
 }
-

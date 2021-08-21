@@ -4,13 +4,13 @@ import me.flashyreese.mods.smartofflinemode.server.SOMServerLoginNetworkHandler;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.c2s.handshake.HandshakeC2SPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.IntegratedServerHandshakeNetworkHandler;
+import net.minecraft.server.network.LocalServerHandshakeNetworkHandler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(IntegratedServerHandshakeNetworkHandler.class)
+@Mixin(LocalServerHandshakeNetworkHandler.class)
 public class MixinIntegratedServerHandshakeNetworkHandler {
 
     @Shadow

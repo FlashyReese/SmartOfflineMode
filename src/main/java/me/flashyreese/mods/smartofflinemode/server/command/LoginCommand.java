@@ -35,7 +35,7 @@ public class LoginCommand {
                 source.sendFeedback(new LiteralText("Logged in!"), false);
 
                 // Update command tree
-                source.getMinecraftServer().getPlayerManager().sendCommandTree(playerEntity);
+                source.getServer().getPlayerManager().sendCommandTree(playerEntity);
             } else {
                 source.sendFeedback(new LiteralText("Invalid password!"), false);
             }

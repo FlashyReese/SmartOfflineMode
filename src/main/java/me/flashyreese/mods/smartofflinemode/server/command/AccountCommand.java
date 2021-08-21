@@ -67,7 +67,7 @@ public class AccountCommand {
 
                         source.sendFeedback(new LiteralText("Account has been deleted!"), false);
                         // Update command tree
-                        source.getMinecraftServer().getPlayerManager().sendCommandTree(playerEntity);
+                        source.getServer().getPlayerManager().sendCommandTree(playerEntity);
                     } else {
                         source.sendFeedback(new LiteralText("Something went wrong!"), false);
                     }
