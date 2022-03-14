@@ -42,7 +42,7 @@ public class PlayerResolver {
                 optionalResult = Optional.of(new Gson().fromJson(reader, Result.class));
             } catch (Exception e) {
                 optionalResult = Optional.empty();
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         } catch (IOException e) {
             e.printStackTrace();

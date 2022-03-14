@@ -5,8 +5,6 @@ import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
 import me.flashyreese.mods.smartofflinemode.server.SmartOfflineModeServerMod;
 import me.flashyreese.mods.smartofflinemode.server.util.PlayerResolver;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.encryption.NetworkEncryptionException;
-import net.minecraft.network.encryption.NetworkEncryptionUtils;
 import net.minecraft.network.packet.c2s.login.LoginKeyC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
@@ -14,24 +12,21 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.logging.UncaughtExceptionLogger;
-import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.security.PrivateKey;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Mixin(ServerLoginNetworkHandler.class)
@@ -74,29 +69,14 @@ public abstract class MixinServerLoginNetworkHandler {
         return PlayerResolver.getGameProfile(profile.getName());
     }
 
-    /**
-     * @author Flashy
-     * cause yes
-     */
-    @Overwrite
-    public void onKey(LoginKeyC2SPacket packet) {
-        String string;
-        Validate.validState(this.state == ServerLoginNetworkHandler.State.KEY, "Unexpected key packet", new Object());
-        PrivateKey privateKey = this.server.getKeyPair().getPrivate();
-        try {
-            if (!Arrays.equals(this.nonce, packet.decryptNonce(privateKey))) {
-                throw new IllegalStateException("Protocol error");
-            }
-            SecretKey secretKey = packet.decryptSecretKey(privateKey);
-            Cipher cipher = NetworkEncryptionUtils.cipherFromKey(2, secretKey);
-            Cipher cipher2 = NetworkEncryptionUtils.cipherFromKey(1, secretKey);
-            string = new BigInteger(NetworkEncryptionUtils.generateServerId("", this.server.getKeyPair().getPublic(), secretKey)).toString(16);
-            this.state = ServerLoginNetworkHandler.State.AUTHENTICATING;
-            this.connection.setupEncryption(cipher, cipher2);
-        } catch (NetworkEncryptionException networkEncryptionException) {
-            throw new IllegalStateException("Protocol error", networkEncryptionException);
-        }
-        Thread thread = new Thread("User Authenticator #" + NEXT_AUTHENTICATOR_THREAD_ID.incrementAndGet()) {
+    @Inject(
+            method = "onKey",
+            at = @At(value = "INVOKE", target = "Ljava/lang/Thread;setUncaughtExceptionHandler(Ljava/lang/Thread$UncaughtExceptionHandler;)V", shift = At.Shift.BEFORE),
+            locals = LocalCapture.CAPTURE_FAILEXCEPTION,
+            cancellable = true
+    )
+    private void createNewThread(LoginKeyC2SPacket packet, CallbackInfo ci, PrivateKey privateKey, String string, Thread thread) {
+        Thread thread2 = new Thread("User Authenticator #" + NEXT_AUTHENTICATOR_THREAD_ID.incrementAndGet()) {
 
             @Override
             public void run() {
@@ -137,7 +117,8 @@ public abstract class MixinServerLoginNetworkHandler {
                 return MixinServerLoginNetworkHandler.this.server.shouldPreventProxyConnections() && socketAddress instanceof InetSocketAddress ? ((InetSocketAddress) socketAddress).getAddress() : null;
             }
         };
-        thread.setUncaughtExceptionHandler(new UncaughtExceptionLogger(LOGGER));
-        thread.start();
+        thread2.setUncaughtExceptionHandler(new UncaughtExceptionLogger(LOGGER));
+        thread2.start();
+        ci.cancel();
     }
 }

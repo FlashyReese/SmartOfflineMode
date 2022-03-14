@@ -1,13 +1,13 @@
 package me.flashyreese.mods.smartofflinemode.server.auth;
 
 import com.mojang.authlib.GameProfile;
-import me.flashyreese.mods.smartofflinemode.server.util.PlayerResolver;
 import me.flashyreese.mods.smartofflinemode.server.command.LoginCommand;
 import me.flashyreese.mods.smartofflinemode.server.command.RegisterCommand;
 import me.flashyreese.mods.smartofflinemode.server.event.PlayerEvents;
 import me.flashyreese.mods.smartofflinemode.server.event.PlayerServerEvents;
 import me.flashyreese.mods.smartofflinemode.server.event.item.DropItemCallback;
 import me.flashyreese.mods.smartofflinemode.server.event.item.TakeItemCallback;
+import me.flashyreese.mods.smartofflinemode.server.util.PlayerResolver;
 import net.fabricmc.fabric.api.event.player.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -27,7 +27,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerServerEvents.Join, PlayerServerEvents.Leave,
@@ -91,10 +90,10 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
 
     @Override
     public LiteralText checkCanJoin(SocketAddress socketAddress, GameProfile profile, PlayerManager manager) {
-        InetSocketAddress sockaddr = (InetSocketAddress)socketAddress;
+        /*InetSocketAddress sockaddr = (InetSocketAddress)socketAddress;
         if (this.authHandler.isLastIP(profile, sockaddr.getAddress().getHostAddress())) {
             return new LiteralText("Logged in with last IP");
-        }
+        }*/
         return null;
     }
 
