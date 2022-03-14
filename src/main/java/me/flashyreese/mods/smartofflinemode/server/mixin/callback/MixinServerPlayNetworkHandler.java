@@ -5,6 +5,7 @@ import me.flashyreese.mods.smartofflinemode.server.event.item.TakeItemCallback;
 import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.server.filter.TextStream;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -21,9 +22,8 @@ public abstract class MixinServerPlayNetworkHandler {
     @Shadow
     public ServerPlayerEntity player;
 
-    // Fixme:
-    /*@Inject(
-            method = "method_31286(Ljava/lang/String;)V",
+    @Inject(
+            method = "handleMessage",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/server/network/ServerPlayerEntity;updateLastActionTime()V",
@@ -31,12 +31,12 @@ public abstract class MixinServerPlayNetworkHandler {
             ),
             cancellable = true
     )
-    private void onPlayerChat(String message, CallbackInfo ci) {
+    private void onPlayerChat(TextStream.Message message, CallbackInfo ci) {
         ActionResult result = PlayerEvents.CHAT.invoker().onPlayerChat(this.player, message);
         if (result == ActionResult.FAIL) {
             ci.cancel();
         }
-    }*/
+    }
 
     @Inject(
             method = "onPlayerAction(Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket;)V",
@@ -66,10 +66,10 @@ public abstract class MixinServerPlayNetworkHandler {
             cancellable = true
     )
     private void onPlayerMove(PlayerMoveC2SPacket playerMoveC2SPacket, CallbackInfo ci) {
-        ActionResult result = PlayerEvents.MOVE.invoker().onPlayerMove(player);
+        ActionResult result = PlayerEvents.MOVE.invoker().onPlayerMove(this.player);
         if (result == ActionResult.FAIL) {
             // A bit ugly, I know. (we need to update player position)
-            player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
+            this.player.networkHandler.requestTeleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYaw(), this.player.getPitch());
             ci.cancel();
         }
     }

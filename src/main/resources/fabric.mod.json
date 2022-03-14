@@ -15,6 +15,7 @@
       "me.flashyreese.mods.smartofflinemode.server.SmartOfflineModeServerMod"
     ]
   },
+  "accessWidener": "smartofflinemode.accesswidener",
   "mixins": [
     "smartofflinemode-server.mixins.json",
     "smartofflinemode-client.mixins.json"

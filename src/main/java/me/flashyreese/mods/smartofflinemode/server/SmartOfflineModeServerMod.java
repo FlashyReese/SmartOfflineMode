@@ -1,6 +1,5 @@
 package me.flashyreese.mods.smartofflinemode.server;
 
-import me.flashyreese.mods.smartofflinemode.server.auth.Account;
 import me.flashyreese.mods.smartofflinemode.server.auth.AuthHandler;
 import me.flashyreese.mods.smartofflinemode.server.command.AccountCommand;
 import me.flashyreese.mods.smartofflinemode.server.command.LoginCommand;
@@ -13,8 +12,7 @@ import me.flashyreese.mods.smartofflinemode.server.event.item.TakeItemCallback;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.*;
-
-import java.io.File;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class SmartOfflineModeServerMod implements DedicatedServerModInitializer {
 
@@ -50,7 +48,7 @@ public class SmartOfflineModeServerMod implements DedicatedServerModInitializer 
     }
 
     public static AuthHandler getAuthHandler() {
-        if (authHandler == null) authHandler = new AuthHandler(new File("config/smart-offline-mode-credentials.lmdb"));
+        if (authHandler == null) authHandler = new AuthHandler(FabricLoader.getInstance().getConfigDir().resolve("smart-offline-mode-credentials.json").toFile());
         return authHandler;
     }
 }

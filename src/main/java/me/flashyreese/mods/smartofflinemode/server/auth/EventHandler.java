@@ -15,6 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.filter.TextStream;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.ActionResult;
@@ -26,6 +27,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerServerEvents.Join, PlayerServerEvents.Leave,
@@ -39,7 +41,8 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
     }
 
     @Override
-    public ActionResult onPlayerChat(PlayerEntity player, String message) {
+    public ActionResult onPlayerChat(PlayerEntity player, TextStream.Message textStreamMessage) {
+        String message = textStreamMessage.getRaw();
         if (!this.authHandler.isLoggedIn(player.getGameProfile()) && !message.startsWith("/" + LoginCommand.getCommand().getLiteral()) && !message.startsWith("/" + RegisterCommand.getCommand().getLiteral())) {
             player.sendMessage(new LiteralText("Please login :>"), false);
             return ActionResult.FAIL;
@@ -88,10 +91,10 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
 
     @Override
     public LiteralText checkCanJoin(SocketAddress socketAddress, GameProfile profile, PlayerManager manager) {
-        /*InetSocketAddress sockaddr = (InetSocketAddress)socketAddress;
+        InetSocketAddress sockaddr = (InetSocketAddress)socketAddress;
         if (this.authHandler.isLastIP(profile, sockaddr.getAddress().getHostAddress())) {
             return new LiteralText("Logged in with last IP");
-        }*/
+        }
         return null;
     }
 

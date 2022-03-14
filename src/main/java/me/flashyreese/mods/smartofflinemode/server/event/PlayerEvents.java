@@ -3,6 +3,7 @@ package me.flashyreese.mods.smartofflinemode.server.event;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.filter.TextStream;
 import net.minecraft.util.ActionResult;
 
 public class PlayerEvents {
@@ -30,7 +31,7 @@ public class PlayerEvents {
     });
 
     public interface Chat {
-        ActionResult onPlayerChat(PlayerEntity player, String message);
+        ActionResult onPlayerChat(PlayerEntity player, TextStream.Message message);
     }
 
     public interface Move {

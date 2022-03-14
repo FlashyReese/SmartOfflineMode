@@ -2,7 +2,7 @@ package me.flashyreese.mods.smartofflinemode.server.auth;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.mojang.authlib.GameProfile;
-import me.flashyreese.mods.smartofflinemode.server.auth.database.LMDB;
+import me.flashyreese.mods.smartofflinemode.server.auth.database.JSONDatabase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,20 +11,20 @@ import java.util.Optional;
 
 public class AuthHandler {
 
-    private final LMDB lmdb;
+    private final JSONDatabase jsonDatabase;
     private final EventHandler eventHandler;
     private final PlayerStateManager playerStateManager;
 
     private final List<GameProfile> unauthenticated = new ArrayList<>();
 
     public AuthHandler(File file) {
-        this.lmdb = new LMDB(file);
+        this.jsonDatabase = new JSONDatabase(file);
         this.eventHandler = new EventHandler(this);
         this.playerStateManager = new PlayerStateManager();
     }
 
     public Account getAccount(GameProfile profile) {
-        return this.lmdb.getAccount(profile.getId());
+        return this.jsonDatabase.getAccount(profile.getId());
     }
 
     public boolean isLoggedIn(GameProfile gameProfile) {
@@ -45,7 +45,7 @@ public class AuthHandler {
 
         Account account = Account.create(gameProfile.getId(), password);
         account.setIpAddress(ip);
-        this.lmdb.addAccount(account);
+        this.jsonDatabase.addAccount(account);
         this.authenticateAccount(gameProfile, password, ip);
         return true;
     }
@@ -54,7 +54,7 @@ public class AuthHandler {
         if (!this.isRegistered(gameProfile)) return false;
 
         Account account = this.getAccount(gameProfile);
-        this.lmdb.deleteAccount(account);
+        this.jsonDatabase.deleteAccount(account);
         return true;
     }
 
@@ -65,7 +65,7 @@ public class AuthHandler {
         BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), account.getPassword());
         if (result.verified) {
             account.setIpAddress(ip);
-            this.lmdb.addAccount(account);
+            this.jsonDatabase.addAccount(account);
             this.authenticateProfile(gameProfile);
             return true;
         }
@@ -91,7 +91,7 @@ public class AuthHandler {
         if (logout) {
             account.setIpAddress("");
         }
-        this.lmdb.addAccount(account);
+        this.jsonDatabase.addAccount(account);
         this.addUnauthenticated(gameProfile);
         return true;
     }
@@ -104,13 +104,13 @@ public class AuthHandler {
     }
 
     public void changeAccountPassword(GameProfile gameProfile, String newPass) {
-        Account updatedAccount = this.lmdb.getAccount(gameProfile.getId());
+        Account updatedAccount = this.jsonDatabase.getAccount(gameProfile.getId());
         updatedAccount.setPassword(BCrypt.withDefaults().hashToString(12, newPass.toCharArray()));
-        this.lmdb.addAccount(updatedAccount);
+        this.jsonDatabase.addAccount(updatedAccount);
     }
 
     public boolean isValidPassword(GameProfile gameProfile, String password) {
-        Account account = this.lmdb.getAccount(gameProfile.getId());
+        Account account = this.jsonDatabase.getAccount(gameProfile.getId());
         BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), account.getPassword());
         return result.verified;
     }

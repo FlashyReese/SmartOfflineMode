@@ -8,9 +8,7 @@
     "callback.MixinPlayerManager",
     "callback.MixinServerPlayNetworkHandler",
     "callback.MixinSlot",
-    "handshake.MixinClientConnection",
-    "handshake.MixinIntegratedServerHandshakeNetworkHandler",
-    "handshake.MixinServerHandshakeNetworkHandler"
+    "handshake.MixinServerLoginNetworkHandler"
   ],
   "injectors": {
     "defaultRequire": 1

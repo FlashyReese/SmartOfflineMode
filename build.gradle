@@ -1,26 +1,19 @@
-import net.fabricmc.loom.task.RemapJarTask
-
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.1'
-    id 'fabric-loom' version '0.10-SNAPSHOT'
+    id 'fabric-loom' version '0.11-SNAPSHOT'
     id 'maven-publish'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
-archivesBaseName = "${project.archives_base_name}-mc${project.minecraft}"
+archivesBaseName = "${project.archives_base_name}-mc${project.minecraft_version}"
 version = project.mod_version
 group = project.maven_group
 
-configurations {
-    shadow
-    api.extendsFrom shadow
+loom {
+    accessWidenerPath = file("src/main/resources/smartofflinemode.accesswidener")
 }
 
-repositories {
-    maven { url 'https://jitpack.io' }
-}
 
 dependencies {
     //to change the versions see the gradle.properties file
@@ -30,11 +23,6 @@ dependencies {
 
     //Fabric API
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    //Database
-    shadow(implementation("org.lmdbjava:lmdbjava:${project.lmdb_version}")) {
-        exclude group: 'org.ow2.asm' //Fabric Loader already includes this
-    }
 
     // BCrypt
     include(implementation("at.favre.lib:bcrypt:${project.bcrypt_version}"))
@@ -73,23 +61,6 @@ jar {
         rename { "${it}_${project.archivesBaseName}"}
     }
 }
-
-shadowJar {
-    dependsOn(project(":").jar)
-    configurations = [project.configurations.shadow]
-    archiveClassifier.set('dev')
-
-    relocate 'org.lmdbjava', 'me.flashyreese.mods.smartofflinemode.shadow.lmdbjava'
-}
-
-task shadowRemapJar(type: RemapJarTask) {
-    dependsOn shadowJar
-
-    input.set(file("${project.buildDir}/libs/$archivesBaseName-${project.version}-dev.jar"))
-    archiveFileName = "${archivesBaseName}-${project.version}.jar"
-    addNestedDependencies.set(true)
-}
-build.dependsOn(shadowRemapJar)
 
 // configure the maven publication
 publishing {
