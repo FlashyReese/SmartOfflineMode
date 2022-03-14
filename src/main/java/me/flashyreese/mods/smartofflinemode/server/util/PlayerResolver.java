@@ -41,8 +41,8 @@ public class PlayerResolver {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), StandardCharsets.UTF_8))) {
                 optionalResult = Optional.of(new Gson().fromJson(reader, Result.class));
             } catch (Exception e) {
-                //e.printStackTrace();
                 optionalResult = Optional.empty();
+                e.printStackTrace();
             }
         } catch (IOException e) {
             e.printStackTrace();

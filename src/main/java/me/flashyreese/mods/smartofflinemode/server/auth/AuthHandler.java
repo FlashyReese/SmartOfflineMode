@@ -98,7 +98,7 @@ public class AuthHandler {
 
     public void addUnauthenticated(GameProfile profile) {
         Optional<GameProfile> optionalGameProfile = this.unauthenticated.stream().filter(gameProfile -> gameProfile.getId().toString().equals(profile.getId().toString()) && gameProfile.getName().equals(profile.getName())).findFirst();
-        if (!optionalGameProfile.isPresent()) {
+        if (optionalGameProfile.isEmpty()) {
             this.unauthenticated.add(profile);
         }
     }
