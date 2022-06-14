@@ -5,7 +5,6 @@ import me.flashyreese.mods.smartofflinemode.server.event.PlayerServerEvents;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,7 +30,7 @@ public abstract class MixinPlayerManager {
     private void checkCanJoin(SocketAddress socketAddress, GameProfile profile, CallbackInfoReturnable<Text> cir) {
         PlayerManager manager = (PlayerManager) (Object) this;
 
-        LiteralText returnText = PlayerServerEvents.PRE_JOIN.invoker().checkCanJoin(socketAddress, profile, manager);
+        Text returnText = PlayerServerEvents.PRE_JOIN.invoker().checkCanJoin(socketAddress, profile, manager);
         if(returnText != null) {
             cir.setReturnValue(returnText);
         }

@@ -8,18 +8,11 @@ import me.flashyreese.mods.smartofflinemode.server.SmartOfflineModeServerMod;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 public class AccountCommand {
     public static LiteralArgumentBuilder<ServerCommandSource> getCommand() {
-        return CommandManager.literal("account").requires(serverCommandSource -> {
-            try {
-                return SmartOfflineModeServerMod.getAuthHandler().getAccount(serverCommandSource.getPlayer().getGameProfile()) != null && SmartOfflineModeServerMod.getAuthHandler().isLoggedIn(serverCommandSource.getPlayer().getGameProfile());
-            } catch (CommandSyntaxException exception) {
-                exception.printStackTrace();
-            }
-            return false;
-        }).then(CommandManager.literal("changePassword")
+        return CommandManager.literal("account").requires(serverCommandSource -> SmartOfflineModeServerMod.getAuthHandler().getAccount(serverCommandSource.getPlayer().getGameProfile()) != null && SmartOfflineModeServerMod.getAuthHandler().isLoggedIn(serverCommandSource.getPlayer().getGameProfile())).then(CommandManager.literal("changePassword")
                 .then(CommandManager.argument("oldPassword", StringArgumentType.word())
                         .then(CommandManager.argument("newPassword", StringArgumentType.word())
                                 .then(CommandManager.argument("confirmNewPassword", StringArgumentType.word())
@@ -42,12 +35,12 @@ public class AccountCommand {
             if (SmartOfflineModeServerMod.getAuthHandler().isValidPassword(playerEntity.getGameProfile(), oldPass)) {
                 if (newPass.equals(confirmNewPass)) {
                     SmartOfflineModeServerMod.getAuthHandler().changeAccountPassword(playerEntity.getGameProfile(), newPass);
-                    source.sendFeedback(new LiteralText("Successfully changed password!"), false);
+                    source.sendFeedback(Text.literal("Successfully changed password!"), false);
                 } else {
-                    source.sendFeedback(new LiteralText("The new password does not match!"), false);
+                    source.sendFeedback(Text.literal("The new password does not match!"), false);
                 }
             } else {
-                source.sendFeedback(new LiteralText("The old password does not match!"), false);
+                source.sendFeedback(Text.literal("The old password does not match!"), false);
             }
         }
         return Command.SINGLE_SUCCESS;
@@ -65,17 +58,17 @@ public class AccountCommand {
                         SmartOfflineModeServerMod.getAuthHandler().getPlayerStateManager().isolateState(playerEntity);
                         SmartOfflineModeServerMod.getAuthHandler().addUnauthenticated(playerEntity.getGameProfile());
 
-                        source.sendFeedback(new LiteralText("Account has been deleted!"), false);
+                        source.sendFeedback(Text.literal("Account has been deleted!"), false);
                         // Update command tree
                         source.getServer().getPlayerManager().sendCommandTree(playerEntity);
                     } else {
-                        source.sendFeedback(new LiteralText("Something went wrong!"), false);
+                        source.sendFeedback(Text.literal("Something went wrong!"), false);
                     }
                 } else {
-                    source.sendFeedback(new LiteralText("The password does not match!"), false);
+                    source.sendFeedback(Text.literal("The password does not match!"), false);
                 }
             } else {
-                source.sendFeedback(new LiteralText("The player name does not match!"), false);
+                source.sendFeedback(Text.literal("The player name does not match!"), false);
             }
         }
         return Command.SINGLE_SUCCESS;

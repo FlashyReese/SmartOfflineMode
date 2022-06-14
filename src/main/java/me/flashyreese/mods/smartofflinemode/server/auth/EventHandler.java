@@ -15,9 +15,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.filter.TextStream;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -40,10 +39,9 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
     }
 
     @Override
-    public ActionResult onPlayerChat(PlayerEntity player, TextStream.Message textStreamMessage) {
-        String message = textStreamMessage.getRaw();
+    public ActionResult onPlayerChat(PlayerEntity player, String message) {
         if (!this.authHandler.isLoggedIn(player.getGameProfile()) && !message.startsWith("/" + LoginCommand.getCommand().getLiteral()) && !message.startsWith("/" + RegisterCommand.getCommand().getLiteral())) {
-            player.sendMessage(new LiteralText("Please login :>"), false);
+            player.sendMessage(Text.literal("Please login :>"), false);
             return ActionResult.FAIL;
         }
         return ActionResult.PASS;
@@ -59,14 +57,14 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
             if (this.authHandler.isLastIP(player.getGameProfile(), player.getIp())) {
                 this.authHandler.authenticateProfile(player.getGameProfile());
                 this.authHandler.getPlayerStateManager().restoreState(player);
-                player.sendMessage(new LiteralText("Logged in with last IP"), false);
+                player.sendMessage(Text.literal("Logged in with last IP"), false);
 
                 player.getServer().getPlayerManager().sendCommandTree(player);
             } else if (!this.authHandler.isRegistered(player.getGameProfile())) {
-                player.sendMessage(new LiteralText("Please register using /register"), false);
+                player.sendMessage(Text.literal("Please register using /register"), false);
             } else {
                 if (!this.authHandler.isLoggedIn(player.getGameProfile())) {
-                    player.sendMessage(new LiteralText("Please login using /login"), false);
+                    player.sendMessage(Text.literal("Please login using /login"), false);
                 }
             }
         }
@@ -89,10 +87,10 @@ public final class EventHandler implements PlayerServerEvents.PreJoin, PlayerSer
     }
 
     @Override
-    public LiteralText checkCanJoin(SocketAddress socketAddress, GameProfile profile, PlayerManager manager) {
+    public Text checkCanJoin(SocketAddress socketAddress, GameProfile profile, PlayerManager manager) {
         /*InetSocketAddress sockaddr = (InetSocketAddress)socketAddress;
         if (this.authHandler.isLastIP(profile, sockaddr.getAddress().getHostAddress())) {
-            return new LiteralText("Logged in with last IP");
+            return Text.literal("Logged in with last IP");
         }*/
         return null;
     }

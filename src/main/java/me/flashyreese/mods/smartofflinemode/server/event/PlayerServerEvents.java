@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.net.SocketAddress;
 
@@ -13,7 +13,7 @@ public class PlayerServerEvents {
 
     public static final Event<PreJoin> PRE_JOIN = EventFactory.createArrayBacked(PreJoin.class, listeners -> (socketAddress, profile, manager) -> {
         for (PreJoin event : listeners) {
-            LiteralText returnText = event.checkCanJoin(socketAddress, profile, manager);
+            Text returnText = event.checkCanJoin(socketAddress, profile, manager);
             if (returnText != null) {
                 return returnText;
             }
@@ -34,7 +34,7 @@ public class PlayerServerEvents {
     });
 
     public interface PreJoin {
-        LiteralText checkCanJoin(SocketAddress socketAddress, GameProfile profile, PlayerManager manager);
+        Text checkCanJoin(SocketAddress socketAddress, GameProfile profile, PlayerManager manager);
     }
 
     public interface Join {

@@ -8,9 +8,7 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.c2s.login.LoginKeyC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerLoginNetworkHandler;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.logging.UncaughtExceptionLogger;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -71,13 +69,12 @@ public abstract class MixinServerLoginNetworkHandler {
 
     @Inject(
             method = "onKey",
-            at = @At(value = "INVOKE", target = "Ljava/lang/Thread;setUncaughtExceptionHandler(Ljava/lang/Thread$UncaughtExceptionHandler;)V", shift = At.Shift.BEFORE),
+            at = @At(value = "INVOKE", target = "Ljava/lang/Thread;setUncaughtExceptionHandler(Ljava/lang/Thread$UncaughtExceptionHandler;)V"),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION,
             cancellable = true
     )
-    private void createNewThread(LoginKeyC2SPacket packet, CallbackInfo ci, PrivateKey privateKey, String string, Thread thread) {
+    private void createNewThread(LoginKeyC2SPacket packet, CallbackInfo ci, String string, Thread thread) {
         Thread thread2 = new Thread("User Authenticator #" + NEXT_AUTHENTICATOR_THREAD_ID.incrementAndGet()) {
-
             @Override
             public void run() {
                 GameProfile gameProfile = MixinServerLoginNetworkHandler.this.profile;
@@ -92,7 +89,7 @@ public abstract class MixinServerLoginNetworkHandler {
                         MixinServerLoginNetworkHandler.this.state = ServerLoginNetworkHandler.State.READY_TO_ACCEPT;
                     } else {
                         if (PlayerResolver.isOnlineAccount(gameProfile)) {
-                            MixinServerLoginNetworkHandler.this.disconnect(new LiteralText("This server is using Smart Offline Mode, please log into the account you are using or please choice an account name not used by Mojang"));
+                            MixinServerLoginNetworkHandler.this.disconnect(Text.literal("This server is using Smart Offline Mode, please log into the account you are using or please choice an account name not used by Mojang"));
                             LOGGER.error("Username '{}' tried to join with an invalid session", gameProfile.getName());
                         } else {
                             MixinServerLoginNetworkHandler.this.profile = MixinServerLoginNetworkHandler.this.toOfflineProfile(gameProfile);
@@ -106,7 +103,7 @@ public abstract class MixinServerLoginNetworkHandler {
                         MixinServerLoginNetworkHandler.this.profile = MixinServerLoginNetworkHandler.this.toOfflineProfile(gameProfile);
                         MixinServerLoginNetworkHandler.this.state = ServerLoginNetworkHandler.State.READY_TO_ACCEPT;
                     }
-                    MixinServerLoginNetworkHandler.this.disconnect(new TranslatableText("multiplayer.disconnect.authservers_down"));
+                    MixinServerLoginNetworkHandler.this.disconnect(Text.translatable("multiplayer.disconnect.authservers_down"));
                     LOGGER.error("Couldn't verify username because servers are unavailable");
                 }
             }

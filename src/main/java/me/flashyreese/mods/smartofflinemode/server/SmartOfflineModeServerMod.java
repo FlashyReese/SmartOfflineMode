@@ -10,7 +10,7 @@ import me.flashyreese.mods.smartofflinemode.server.event.PlayerServerEvents;
 import me.flashyreese.mods.smartofflinemode.server.event.item.DropItemCallback;
 import me.flashyreese.mods.smartofflinemode.server.event.item.TakeItemCallback;
 import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.*;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -21,8 +21,8 @@ public class SmartOfflineModeServerMod implements DedicatedServerModInitializer 
     @Override
     public void onInitializeServer() {
         // Registering the commands
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            if (dedicated) {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, dedicated) -> {
+            if (dedicated.dedicated) {
                 dispatcher.register(AccountCommand.getCommand());
                 dispatcher.register(RegisterCommand.getCommand());
                 dispatcher.register(LoginCommand.getCommand());
